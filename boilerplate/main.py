@@ -78,6 +78,9 @@ class BoilerPlate:
         if args.template == "javascript":
             self.create_javascript_template(project_path)
 
+        if args.template == "flask":
+            self.create_flask_template(project_path)
+
         print("✅ Projeto criado com sucesso!")
 
     def create_python_template(self, path: Path):
@@ -107,9 +110,10 @@ class BoilerPlate:
     def create_javascript_template(self, path: Path):
         try:
             print("📁 Criando estrutura de diretórios...")
-            (path / "assets").mkdir(exist_ok=True)
-            (path / "assets" / "images").mkdir(exist_ok=True)
-            (path / "assets" / "fonts").mkdir(exist_ok=True)
+            (path / "app").mkdir(exist_ok=True)
+            (path / "static").mkdir(exist_ok=True)
+            (path / "templates").mkdir(exist_ok=True)
+    
 
             print("📄 Gerando arquivos iniciais...")
             (path / "index.html").touch()
@@ -118,6 +122,38 @@ class BoilerPlate:
             (path / "README.md").touch()
         except Exception as e:
             print(f"❌ Erro ao criar template JavaScript: {e}")
+
+    def create_flask_template(self, path: Path):
+        try:
+            print("🐍 Criando ambiente virtual em .venv...")
+            subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)
+
+            print("📁 Criando estrutura de diretórios...")
+            (path / "app").mkdir(exist_ok=True)
+            (path / "app" / "static").mkdir(exist_ok=True)
+            (path / "app" / "static" / "css").mkdir(exist_ok=True)
+            (path / "app" / "static" / "images").mkdir(exist_ok=True)
+            (path / "app" / "static" / "js").mkdir(exist_ok=True)
+            (path / "app" / "templates").mkdir(exist_ok=True)
+
+            print("📄 Gerando arquivos iniciais...")
+            (path / "app" / "__init__.py").touch()
+            (path / "app" / "main.py").touch()
+            (path / "app" / "static" / "js" / "script.js").touch()
+            (path / "app" / "static" / "css" / "style.css").touch()
+            (path / "app" / "templates" / "index.html").touch()
+            (path / "README.md").touch()
+            (path / "LICENSE").touch()
+            (path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n.venv/\n")
+
+
+            print("✅ Template Flask criado com sucesso!")
+        except subprocess.CalledProcessError:
+            print(
+                "❌ Falha ao criar o ambiente virtual. Verifique se o Python está instalado corretamente."
+            )
+        except Exception as e:
+            print(f"❌ Erro ao criar template Flask: {e}")
 
 
 if __name__ == "__main__":
