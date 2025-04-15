@@ -29,6 +29,27 @@ class BoilerPlate:
             help="Define o template/base do projeto (ex: python, flask, node)",
         )
 
+        self.templates = ["python", "flask", "javascript" ]
+        self.file_contents = {
+            "flask": "https://dpaste.org/eFpjt/raw",
+            "mit_license": "https://dpaste.org/9ddEc/raw"
+        }
+
+
+    def get_content(self, source):
+        if source not in self.file_contents:
+            return False
+    
+        data = self.file_contents[source]
+        result = subprocess.run(["curl", data], capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print(f"Erro ao executar curl: {result.stderr}")
+            return False
+        
+        return result.stdout
+
+
     def run(self):
         args = self.parser.parse_args()
 
@@ -51,21 +72,23 @@ class BoilerPlate:
             print(f"Detalhes: {e}")
             sys.exit(1)
 
+
     def validate_args(self, args):
         if not args.name or not args.template:
             raise ValueError(
                 "Os argumentos --name e --template são obrigatórios se --list não for usado."
             )
-        if args.template not in ["python", "flask", "javascript", "nodejs"]:
+        if args.template not in self.templates:
             raise ValueError(
                 f"Template '{args.template}' não é suportado. Use --list para ver opções válidas."
             )
 
+
     def list_templates(self):
-        templates = ["python", "flask", "javascript", "nodejs", "fastapi"]
         print("📚 Templates disponíveis:")
-        for t in templates:
+        for t in self.templates:
             print(f" - {t}")
+
 
     def create_project(self, args):
         project_path = Path(args.name).resolve()
@@ -82,6 +105,7 @@ class BoilerPlate:
             self.create_flask_template(project_path)
 
         print("✅ Projeto criado com sucesso!")
+
 
     def create_python_template(self, path: Path):
         try:
@@ -107,6 +131,7 @@ class BoilerPlate:
         except Exception as e:
             print(f"❌ Erro ao criar template Python: {e}")
 
+
     def create_javascript_template(self, path: Path):
         try:
             print("📁 Criando estrutura de diretórios...")
@@ -126,7 +151,7 @@ class BoilerPlate:
     def create_flask_template(self, path: Path):
         try:
             print("🐍 Criando ambiente virtual em .venv...")
-            subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)
+            subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)            
 
             print("📁 Criando estrutura de diretórios...")
             (path / "app").mkdir(exist_ok=True)
@@ -138,12 +163,12 @@ class BoilerPlate:
 
             print("📄 Gerando arquivos iniciais...")
             (path / "app" / "__init__.py").touch()
-            (path / "app" / "main.py").touch()
+            (path / "app" / "main.py").write_text(self.get_content("cavalo"))
             (path / "app" / "static" / "js" / "script.js").touch()
             (path / "app" / "static" / "css" / "style.css").touch()
             (path / "app" / "templates" / "index.html").touch()
             (path / "README.md").touch()
-            (path / "LICENSE").touch()
+            (path / "LICENSE").write_text(self.get_content("mit_license"))
             (path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n.venv/\n")
 
 
