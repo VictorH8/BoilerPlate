@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 class BoilerPlate:
@@ -19,7 +19,7 @@ class BoilerPlate:
         self.parser.add_argument(
             "--list",
             action="store_true",
-            help="Lista os templates prontos disponíveis (ex: python, node, flask)",
+            help="Exibe uma lista dos templates e licenças disponíveis. Exemplos de templates: python, node. Exemplos de licenças: MIT, GPL.",
         )
         self.parser.add_argument(
             "--name", help="Nome do diretório/projeto a ser criado"
@@ -28,27 +28,38 @@ class BoilerPlate:
             "--template",
             help="Define o template/base do projeto (ex: python, flask, node)",
         )
-
-        self.templates = ["python", "flask", "javascript" ]
+        self.parser.add_argument(
+            "--license",
+            help="Especifique a licença do seu projeto (ex: MIT, GPL, Apache). Se nenhuma licença for escolhida, a licença padrão será MIT.",
+        )
+        self.templates = ["python", "flask", "javascript"]
+        self.license_list = ["MIT", "GPL", "APACHE", "BSD", "CC", "MPL", "EPL", "LGPL"]
         self.file_contents = {
             "flask": "https://dpaste.org/eFpjt/raw",
-            "mit_license": "https://dpaste.org/9ddEc/raw"
+            "mit": "https://dpaste.org/9ddEc/raw",
+            "gpl": "https://choosealicense.com/licenses/gpl-3.0.txt",
+            "apache": "https://choosealicense.com/licenses/apache-2.0.txt",
+            "bsd": "https://choosealicense.com/licenses/bsd-3-clause.txt",
+            "cc": "https://creativecommons.org/licenses/by/4.0/legalcode.txt",
+            "mpl": "https://choosealicense.com/licenses/mpl-2.0.txt",
+            "epl": "https://www.eclipse.org/legal/epl-2.0/epl-2.0.txt",
+            "lgpl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
         }
 
-
     def get_content(self, source):
+        source = source.lower()
         if source not in self.file_contents:
-            return False
-    
+            print(f"⚠️ Licença '{source}' não encontrada. Usando MIT como fallback.")
+            source = "mit"
+
         data = self.file_contents[source]
         result = subprocess.run(["curl", data], capture_output=True, text=True)
 
         if result.returncode != 0:
             print(f"Erro ao executar curl: {result.stderr}")
-            return False
-        
-        return result.stdout
+            return "Licença não disponível no momento."
 
+        return result.stdout
 
     def run(self):
         args = self.parser.parse_args()
@@ -72,7 +83,6 @@ class BoilerPlate:
             print(f"Detalhes: {e}")
             sys.exit(1)
 
-
     def validate_args(self, args):
         if not args.name or not args.template:
             raise ValueError(
@@ -83,31 +93,35 @@ class BoilerPlate:
                 f"Template '{args.template}' não é suportado. Use --list para ver opções válidas."
             )
 
-
     def list_templates(self):
-        print("📚 Templates disponíveis:")
+        print("🗂️  Templates disponíveis:")
         for t in self.templates:
             print(f" - {t}")
 
+        print(f"\n📜 Licenças disponíveis:")
+        for l in self.license_list:
+            print(f" - {l}")
 
     def create_project(self, args):
         project_path = Path(args.name).resolve()
         project_path.mkdir(exist_ok=False)
         print(f"📁 Criando projeto em: {project_path}")
 
+        if args.license:
+            license = args.license.lower()
+        else:
+            license = "mit"
+
         if args.template == "python":
-            self.create_python_template(project_path)
+            self.create_python_template(project_path, license)
 
         if args.template == "javascript":
-            self.create_javascript_template(project_path)
+            self.create_javascript_template(project_path, license)
 
         if args.template == "flask":
-            self.create_flask_template(project_path)
+            self.create_flask_template(project_path, license)
 
-        print("✅ Projeto criado com sucesso!")
-
-
-    def create_python_template(self, path: Path):
+    def create_python_template(self, path: Path, license="MIT"):
         try:
             print("🐍 Criando ambiente virtual em .venv...")
             subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)
@@ -118,9 +132,10 @@ class BoilerPlate:
 
             print("📄 Gerando arquivos iniciais...")
             (path / "README.md").write_text(
-                "# Projeto Python Gerado Pelo BoilerPlate\n"
+                "# Projeto Python Gerado Pelfalei errado o BoilerPlate\n"
             )
             (path / "src" / "__init__.py").touch()
+            (path / "LICENSE").write_text(self.get_content(license))
             (path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n.venv/\n")
 
             print("✅ Template Python criado com sucesso!")
@@ -131,27 +146,26 @@ class BoilerPlate:
         except Exception as e:
             print(f"❌ Erro ao criar template Python: {e}")
 
-
-    def create_javascript_template(self, path: Path):
+    def create_javascript_template(self, path: Path, license="MIT"):
         try:
             print("📁 Criando estrutura de diretórios...")
             (path / "app").mkdir(exist_ok=True)
             (path / "static").mkdir(exist_ok=True)
             (path / "templates").mkdir(exist_ok=True)
-    
 
             print("📄 Gerando arquivos iniciais...")
             (path / "index.html").touch()
             (path / "style.css").touch()
             (path / "script.js").touch()
             (path / "README.md").touch()
+            (path / "LICENSE").write_text(self.get_content(license))
         except Exception as e:
             print(f"❌ Erro ao criar template JavaScript: {e}")
 
-    def create_flask_template(self, path: Path):
+    def create_flask_template(self, path: Path, license="MIT"):
         try:
             print("🐍 Criando ambiente virtual em .venv...")
-            subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)            
+            subprocess.run(["python3", "-m", "venv", str(path / ".venv")], check=True)
 
             print("📁 Criando estrutura de diretórios...")
             (path / "app").mkdir(exist_ok=True)
@@ -163,14 +177,13 @@ class BoilerPlate:
 
             print("📄 Gerando arquivos iniciais...")
             (path / "app" / "__init__.py").touch()
-            (path / "app" / "main.py").write_text(self.get_content("cavalo"))
+            (path / "app" / "main.py").write_text(self.get_content("flask"))
             (path / "app" / "static" / "js" / "script.js").touch()
             (path / "app" / "static" / "css" / "style.css").touch()
             (path / "app" / "templates" / "index.html").touch()
             (path / "README.md").touch()
-            (path / "LICENSE").write_text(self.get_content("mit_license"))
+            (path / "LICENSE").write_text(self.get_content(license))
             (path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n.venv/\n")
-
 
             print("✅ Template Flask criado com sucesso!")
         except subprocess.CalledProcessError:
