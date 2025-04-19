@@ -32,10 +32,9 @@ class BoilerPlate:
             "--license",
             help="Especifique a licença do seu projeto (ex: MIT, GPL, Apache). Se nenhuma licença for escolhida, a licença padrão será MIT.",
         )
-        self.templates = ["python", "flask", "javascript"]
+        self.templates = ["python", "flask", "javascript", "node"]
         self.license_list = ["MIT", "GPL", "APACHE", "BSD", "CC", "MPL", "EPL", "LGPL"]
         self.file_contents = {
-            "flask": "https://dpaste.org/eFpjt/raw",
             "mit": "https://dpaste.org/9ddEc/raw",
             "gpl": "https://choosealicense.com/licenses/gpl-3.0.txt",
             "apache": "https://choosealicense.com/licenses/apache-2.0.txt",
@@ -44,6 +43,13 @@ class BoilerPlate:
             "mpl": "https://choosealicense.com/licenses/mpl-2.0.txt",
             "epl": "https://www.eclipse.org/legal/epl-2.0/epl-2.0.txt",
             "lgpl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
+            "flask": "https://dpaste.org/eFpjt/raw",
+            "html_js_template": "https://dpaste.org/Y66LF/raw",
+            "css": "https://dpaste.org/FZ7ty/raw",
+            "html": "https://dpaste.org/jta0w/raw",
+            "gitignore": "https://dpaste.org/AbXEi/raw",
+            "gitignore_python": "https://www.toptal.com/developers/gitignore/api/python",
+            "gitignore_node": "https://www.toptal.com/developers/gitignore/api/node"
         }
 
     def get_content(self, source):
@@ -121,6 +127,9 @@ class BoilerPlate:
         if args.template == "flask":
             self.create_flask_template(project_path, license)
 
+        if args.template == "node":
+            self.create_node_template(project_path, license)
+
     def create_python_template(self, path: Path, license="MIT"):
         try:
             print("🐍 Criando ambiente virtual em .venv...")
@@ -149,13 +158,11 @@ class BoilerPlate:
     def create_javascript_template(self, path: Path, license="MIT"):
         try:
             print("📁 Criando estrutura de diretórios...")
-            (path / "app").mkdir(exist_ok=True)
-            (path / "static").mkdir(exist_ok=True)
-            (path / "templates").mkdir(exist_ok=True)
+            (path / "assets").mkdir(exist_ok=True)
 
             print("📄 Gerando arquivos iniciais...")
-            (path / "index.html").touch()
-            (path / "style.css").touch()
+            (path / "index.html").write_text(self.get_content("html_js_template"))
+            (path / "style.css").write_text(self.get_content("css"))
             (path / "script.js").touch()
             (path / "README.md").touch()
             (path / "LICENSE").write_text(self.get_content(license))
@@ -179,11 +186,11 @@ class BoilerPlate:
             (path / "app" / "__init__.py").touch()
             (path / "app" / "main.py").write_text(self.get_content("flask"))
             (path / "app" / "static" / "js" / "script.js").touch()
-            (path / "app" / "static" / "css" / "style.css").touch()
-            (path / "app" / "templates" / "index.html").touch()
+            (path / "app" / "static" / "css" / "style.css").write_text(self.get_content("css"))
+            (path / "app" / "templates" / "index.html").write_text(self.get_content("html"))
             (path / "README.md").touch()
             (path / "LICENSE").write_text(self.get_content(license))
-            (path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n.venv/\n")
+            (path / ".gitignore").write_text(self.get_content("gitignore_python"))
 
             print("✅ Template Flask criado com sucesso!")
         except subprocess.CalledProcessError:
@@ -192,6 +199,22 @@ class BoilerPlate:
             )
         except Exception as e:
             print(f"❌ Erro ao criar template Flask: {e}")
+
+
+    def create_node_template(self, path: Path, license="MIT"):
+        try:
+            print("📁 Criando estrutura de diretórios...")
+            (path / "src").mkdir(exist_ok=True)
+            (path / "src" / "utils").mkdir(exist_ok=True)
+
+            print("📄 Gerando arquivos iniciais...")
+            (path / "src" / "index.js").touch()
+            (path / ".gitignore").write_text(self.get_content("gitignore_node"))
+            (path / "package.json").touch()
+            (path / "README.md").touch()
+
+        except Exception as e:
+            print(f"❌ Erro ao criar template Node: {e}")
 
 
 if __name__ == "__main__":
