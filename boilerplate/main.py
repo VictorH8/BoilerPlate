@@ -49,7 +49,8 @@ class BoilerPlate:
             "html": "https://dpaste.org/jta0w/raw",
             "gitignore": "https://dpaste.org/AbXEi/raw",
             "gitignore_python": "https://www.toptal.com/developers/gitignore/api/python",
-            "gitignore_node": "https://www.toptal.com/developers/gitignore/api/node"
+            "gitignore_node": "https://www.toptal.com/developers/gitignore/api/node",
+            "node_package_json": "https://dpaste.org/R4HNP/raw"
         }
 
     def get_content(self, source):
@@ -205,13 +206,26 @@ class BoilerPlate:
         try:
             print("📁 Criando estrutura de diretórios...")
             (path / "src").mkdir(exist_ok=True)
+            (path / "src" / "config").mkdir(exist_ok=True)
+            (path / "src" / "controllers").mkdir(exist_ok=True)
+            (path / "src" / "middleware").mkdir(exist_ok=True)
+            (path / "src" / "models").mkdir(exist_ok=True)
+            (path / "src" / "routes").mkdir(exist_ok=True)
+            (path / "src" / "services").mkdir(exist_ok=True)
             (path / "src" / "utils").mkdir(exist_ok=True)
+            (path / "src" / "validations").mkdir(exist_ok=True)
+            (path / "src" / "tests").mkdir(exist_ok=True)
 
             print("📄 Gerando arquivos iniciais...")
-            (path / "src" / "index.js").touch()
+            (path / "src" / "app.js").touch()
+            (path / "src" / "server.js").touch()
+            (path / ".env").touch()
             (path / ".gitignore").write_text(self.get_content("gitignore_node"))
-            (path / "package.json").touch()
+            (path / "package.json").write_text(self.get_content("node_package_json"))
+            (path / "LICENSE").write_text(self.get_content(license))
             (path / "README.md").touch()
+
+            print("✅ Template Node.js criado com sucesso!")
 
         except Exception as e:
             print(f"❌ Erro ao criar template Node: {e}")
